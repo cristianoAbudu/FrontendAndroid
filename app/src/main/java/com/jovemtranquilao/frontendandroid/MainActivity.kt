@@ -1,5 +1,7 @@
 package com.jovemtranquilao.frontendandroid
 
+import android.R.attr.label
+import android.app.ActionBar
 import android.os.Bundle
 import android.text.Editable
 import android.util.Log
@@ -7,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
@@ -17,14 +20,9 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.snackbar.Snackbar
-import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
 import com.jovemtranquilao.frontendandroid.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -45,9 +43,6 @@ class MainActivity : AppCompatActivity() {
 
     private var tableLayout : TableLayout? = null
 
-    private var textView : TextView? = null;
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
@@ -61,19 +56,23 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        binding.fab.setOnClickListener { view ->
+        val onClickListener = binding.fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAnchorView(R.id.fab)
-                    .setAction("Action", null).show()
+                .setAnchorView(R.id.fab)
+                .setAction("Action", null).show()
         }
 
         nome = findViewById(R.id.editTextText)
         senha = findViewById(R.id.editTextTextPassword)
 
         tableLayout = findViewById(R.id.tabela)
-        textView = findViewById(R.id.textView2)
 
-        recuperarColaboradores();
+        try {
+            recuperarColaboradores();
+        } catch(ex : Exception){
+            ex.printStackTrace()
+        }
+        System.out.println("oi")
     }
 
     private fun recuperarColaboradores() {
@@ -87,31 +86,58 @@ class MainActivity : AppCompatActivity() {
         //3. Create an instance of the interface:
         val apiService = retrofit.create(ApiService::class.java)
 
+
         //5. Make the request:
         apiService.get().enqueue(
             object :  Callback<String> {
                 override fun onResponse(call: Call<String>, response: Response<String>) {
-                    Log.i("Response", response.body().toString());
-                    //Toast.makeText()
-                    if (response.isSuccessful()) {
-                        if (response.body() != null) {
-                            Log.i("onSuccess", response.body().toString());
-                            textView?.text = response.body().toString()
-                            val jsonArray : JsonArray = JsonParser().parse(response.body().toString()) as JsonArray
-                            jsonArray.forEach {
-                                println(it)
+                    try {
+                        Log.i("Response", response.body().toString());
+                        //Toast.makeText()
+                        if (response.isSuccessful()) {
+                            if (response.body() != null) {
+                                Log.i("onSuccess", response.body().toString());
+                                tableLayout?.removeAllViews()
+
+                                val jsonArray: JsonArray =
+                                    JsonParser().parse(response.body().toString()) as JsonArray
+                                jsonArray.forEach {
+                                    println(it)
+                                    val tr = TableRow(applicationContext);
+                                    val un = TextView(applicationContext)
+                                    un.text = (
+                                        it.asJsonObject.get("nome").toString()
+                                        + " - " + it.asJsonObject.get("score").toString()
+                                        + " - " + it.asJsonObject.get("chefe").toString()
+                                    )
+                                    val Ll = LinearLayout(applicationContext)
+                                    val params: LinearLayout.LayoutParams =
+                                        LinearLayout.LayoutParams(
+                                            ActionBar.LayoutParams.MATCH_PARENT,
+                                            ActionBar.LayoutParams.WRAP_CONTENT
+                                        )
+                                    params.setMargins(5, 2, 2, 2)
+                                    //Ll.setPadding(10, 5, 5, 5);
+                                    //Ll.setPadding(10, 5, 5, 5);
+                                    Ll.addView(un, params)
+                                    tr.addView(Ll) // Adding textView to tablerow.
+
+                                    tableLayout?.addView(tr)
+
+                                }
+                            } else {
+                                Log.i(
+                                    "onEmptyResponse",
+                                    "Returned empty response"
+                                );//Toast.makeText(getContext(),"Nothing returned",Toast.LENGTH_LONG).show();
                             }
-                        } else {
-                            Log.i(
-                                "onEmptyResponse",
-                                "Returned empty response"
-                            );//Toast.makeText(getContext(),"Nothing returned",Toast.LENGTH_LONG).show();
                         }
+                    }catch (e : java.lang.Exception){
+                        e.printStackTrace()
                     }
                 }
-
                 override fun onFailure(call: Call<String>, t: Throwable) {
-                    TODO("Not yet implemented")
+                    t.printStackTrace()
                 }
             }
         )
@@ -169,6 +195,7 @@ class MainActivity : AppCompatActivity() {
         apiService.postRequest(body).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 System.out.println(response.body())
+                recuperarColaboradores();
             }
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
