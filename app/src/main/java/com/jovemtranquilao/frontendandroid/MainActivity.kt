@@ -1,6 +1,6 @@
 package com.jovemtranquilao.frontendandroid
 
-import android.R.attr.label
+import android.R
 import android.app.ActionBar
 import android.os.Bundle
 import android.text.Editable
@@ -8,8 +8,10 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
@@ -22,7 +24,9 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
+import com.jovemtranquilao.frontendandroid.adapter.SpinAdapter
 import com.jovemtranquilao.frontendandroid.databinding.ActivityMainBinding
+import com.jovemtranquilao.frontendandroid.dto.SpinnerDTO
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -42,6 +46,9 @@ class MainActivity : AppCompatActivity() {
 
 
     private var tableLayout : TableLayout? = null
+
+    private var chefe: Spinner? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -66,6 +73,7 @@ class MainActivity : AppCompatActivity() {
         senha = findViewById(R.id.editTextTextPassword)
 
         tableLayout = findViewById(R.id.tabela)
+        chefe = findViewById(R.id.spinner)
 
         try {
             recuperarColaboradores();
@@ -101,15 +109,26 @@ class MainActivity : AppCompatActivity() {
 
                                 val jsonArray: JsonArray =
                                     JsonParser().parse(response.body().toString()) as JsonArray
+
+                                var lista = ArrayList<SpinnerDTO>();
+
                                 jsonArray.forEach {
                                     println(it)
+
+                                    lista.add(
+                                        SpinnerDTO(
+                                            Integer.valueOf(it.asJsonObject?.get("id").toString()),
+                                            it.asJsonObject?.get("nome").toString()
+                                        )
+                                    )
+
                                     val tr = TableRow(applicationContext);
                                     val un = TextView(applicationContext)
                                     un.text = (
-                                        it.asJsonObject.get("nome").toString()
-                                        + " - " + it.asJsonObject.get("score").toString()
-                                        + " - " + it.asJsonObject.get("chefe").toString()
-                                    )
+                                            it.asJsonObject.get("nome").toString()
+                                                    + " - " + it.asJsonObject.get("score").toString()
+                                                    + " - " + it.asJsonObject.get("chefe").toString()
+                                            )
                                     val Ll = LinearLayout(applicationContext)
                                     val params: LinearLayout.LayoutParams =
                                         LinearLayout.LayoutParams(
@@ -125,6 +144,35 @@ class MainActivity : AppCompatActivity() {
                                     tableLayout?.addView(tr)
 
                                 }
+
+                                val dropdown = findViewById<Spinner>(R.id.spinner1)
+//create a list of items for the spinner.
+//create a list of items for the spinner.
+                                val items = arrayOf("1", "2", "three")
+//create an adapter to describe how the items are displayed, adapters are used in several places in android.
+//There are multiple variations of this, but this is the basic variant.
+//create an adapter to describe how the items are displayed, adapters are used in several places in android.
+//There are multiple variations of this, but this is the basic variant.
+                                val adapter = ArrayAdapter(
+                                    this,
+                                    R.layout.simple_spinner_dropdown_item,
+                                    items
+                                )
+//set the spinners adapter to the previously created one.
+//set the spinners adapter to the previously created one.
+                                dropdown.adapter = adapter
+
+                                val users = lista.toTypedArray()
+
+                                val adapter = SpinAdapter(
+                                    applicationContext,
+                                    R.layout.simple_spinner_dropdown_item,
+                                    users
+                                )
+                                chefe?.setAdapter(adapter) // Set the custom adapter to the spinner
+
+
+
                             } else {
                                 Log.i(
                                     "onEmptyResponse",
@@ -194,7 +242,8 @@ class MainActivity : AppCompatActivity() {
 
         apiService.postRequest(body).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                System.out.println(response.body())
+                nome?.text?.clear()
+                senha?.text?.clear()
                 recuperarColaboradores();
             }
 
