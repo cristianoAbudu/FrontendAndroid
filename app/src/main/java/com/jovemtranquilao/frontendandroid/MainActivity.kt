@@ -47,6 +47,8 @@ class MainActivity : AppCompatActivity() {
     private var tableLayout : TableLayout? = null
 
     private var chefe: Spinner? = null
+    private var subordinado: Spinner? = null
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +75,7 @@ class MainActivity : AppCompatActivity() {
 
         tableLayout = findViewById(R.id.tabela)
         chefe = findViewById(R.id.spinner)
+        chefe = findViewById(R.id.subordinado)
 
         try {
             recuperarColaboradores();
@@ -146,14 +149,19 @@ class MainActivity : AppCompatActivity() {
 
                                 val users = lista.toTypedArray()
 
-                                val colors = arrayOf("blue", "red")
-
                                 val arrayadapter = ArrayAdapter(
                                     this@MainActivity,
                                     android.R.layout.simple_spinner_dropdown_item,
                                     users
                                 )
                                 chefe?.adapter = arrayadapter
+
+                                val arrayadapter2 = ArrayAdapter(
+                                    this@MainActivity,
+                                    android.R.layout.simple_spinner_dropdown_item,
+                                    users
+                                )
+                                subordinado?.adapter = arrayadapter2
 
 
                             } else {
