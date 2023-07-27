@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
 
         tableLayout = findViewById(R.id.tabela)
         chefe = findViewById(R.id.spinner)
-        chefe = findViewById(R.id.subordinado)
+        subordinado = findViewById(R.id.subordinado)
 
         try {
             recuperarColaboradores();
