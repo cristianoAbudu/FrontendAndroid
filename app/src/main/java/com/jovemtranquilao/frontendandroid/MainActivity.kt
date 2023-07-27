@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         senha = findViewById(R.id.editTextTextPassword)
 
         tableLayout = findViewById(R.id.tabela)
-        //chefe = findViewById(R.id.spinner)
+        chefe = findViewById(R.id.spinner)
 
         try {
             recuperarColaboradores();
@@ -146,6 +146,14 @@ class MainActivity : AppCompatActivity() {
 
                                 val users = lista.toTypedArray()
 
+                                val colors = arrayOf("blue", "red")
+
+                                val arrayadapter = ArrayAdapter(
+                                    this@MainActivity,
+                                    android.R.layout.simple_spinner_dropdown_item,
+                                    users
+                                )
+                                chefe?.adapter = arrayadapter
 
 
                             } else {
