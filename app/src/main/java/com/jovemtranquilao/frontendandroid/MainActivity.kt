@@ -88,7 +88,7 @@ class MainActivity : AppCompatActivity() {
     private fun recuperarColaboradores() {
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.3.104:8080")
+            .baseUrl("http://192.168.2.2:8080")
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -213,10 +213,18 @@ class MainActivity : AppCompatActivity() {
         getMyData(nomeValue, senhaValue)
     }
 
+    fun associaChefe(view: View) {
+        val toString = view.toString()
+        val chefeId = (chefe?.selectedItem as SpinnerDTO).id
+        val subordinadoId = (subordinado?.selectedItem as SpinnerDTO).id
+
+        associaChefe(chefeId, subordinadoId)
+    }
+
     private fun getMyData(nomeValue: Editable?, senhaValue: Editable?) {
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.3.104:8080")
+            .baseUrl("http://192.168.2.2:8080")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
@@ -232,6 +240,38 @@ class MainActivity : AppCompatActivity() {
         //5. Make the request:
 
         apiService.postRequest(body).enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                nome?.text?.clear()
+                senha?.text?.clear()
+                recuperarColaboradores();
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                System.out.println("öi")
+            }
+        })
+
+    }
+
+    private fun associaChefe(chefeId: Int, subordinadoId: Int) {
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://192.168.2.2:8080")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        //3. Create an instance of the interface:
+        val apiService = retrofit.create(ApiService::class.java)
+
+        //4. Create the request body:
+        val body = mapOf(
+            "idChefe" to chefeId,
+            "idSubordinado" to subordinadoId
+        )
+
+        //5. Make the request:
+
+        apiService.associaChefe(body).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 nome?.text?.clear()
                 senha?.text?.clear()

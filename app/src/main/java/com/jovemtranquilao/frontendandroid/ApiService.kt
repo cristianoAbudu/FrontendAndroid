@@ -15,4 +15,8 @@ interface ApiService {
     @GET("/")
     fun get(): Call<String>
 
+    @POST("/associaChefe")
+    fun associaChefe(@Body body: Map<String, Int>): Call<ResponseBody>
+
+
 }
