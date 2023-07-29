@@ -1,13 +1,18 @@
 package com.jovemtranquilao.frontendandroid
 
+import android.app.ActionBar
 import android.os.Bundle
 import android.text.Editable
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TableLayout
+import android.widget.TableRow
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.navigation.findNavController
@@ -34,11 +39,11 @@ class MainActivity : AppCompatActivity(
 
     private var nome: EditText? = null
     private var senha: EditText? = null
-    private var tableLayout : TableLayout? = null
+    private var tableLayout: TableLayout? = null
     private var chefe: Spinner? = null
     private var subordinado: Spinner? = null
 
-    private var colaboradorAPIIntegration : ColaborarAPIIntegration =  ColaborarAPIIntegration()
+    private var colaboradorAPIIntegration: ColaborarAPIIntegration = ColaborarAPIIntegration()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -61,7 +66,7 @@ class MainActivity : AppCompatActivity(
 
         bindFields()
 
-        recuperarColaboradores();
+        colaboradorAPIIntegration.recuperarColaboradores(this);
     }
 
     private fun bindFields() {
@@ -72,13 +77,51 @@ class MainActivity : AppCompatActivity(
         subordinado = findViewById(R.id.subordinado)
     }
 
-    private fun recuperarColaboradores() {
 
-        colaboradorAPIIntegration.recuperarColaboradores(tableLayout,chefe, subordinado, applicationContext,this@MainActivity )
+    fun tratarCallback(response: ArrayList<ColaboradorDTO>) {
+        preencherTabela(response)
+        preencherCombos(response)
+    }
 
 
+    private fun preencherCombos(
+        lista: ArrayList<ColaboradorDTO>
+    ) {
+        val users = lista.toTypedArray()
+
+        val arrayadapter = ArrayAdapter(
+            this@MainActivity,
+            android.R.layout.simple_spinner_dropdown_item,
+            users
+        )
+        chefe?.adapter = arrayadapter
+
+        subordinado?.adapter = arrayadapter
+    }
+
+
+    private fun preencherTabela(lista: ArrayList<ColaboradorDTO>) {
+        lista.forEach {
+            val tableRow = TableRow(applicationContext);
+            val textView = TextView(applicationContext)
+            textView.text = (
+                it.nome + " - " + it.score+ " - " + it.chefe?.nome
+            )
+            val linearLayout = LinearLayout(applicationContext)
+            val params: LinearLayout.LayoutParams =
+                LinearLayout.LayoutParams(
+                    ActionBar.LayoutParams.MATCH_PARENT,
+                    ActionBar.LayoutParams.WRAP_CONTENT
+                )
+            params.setMargins(5, 2, 2, 2)
+            linearLayout.addView(textView, params)
+            tableRow.addView(linearLayout) // Adding textView to tablerow.
+
+            tableLayout?.addView(tableRow)
+        }
 
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -102,84 +145,27 @@ class MainActivity : AppCompatActivity(
                 || super.onSupportNavigateUp()
     }
 
-    fun sendMessage(view: View) {
+    fun salvarColaborador(view: View) {
         val toString = view.toString()
         val nomeValue = nome?.text
         val senhaValue = senha?.text
 
-        getMyData(nomeValue, senhaValue)
+        colaboradorAPIIntegration.salvarColaborador(nomeValue, senhaValue, this)
     }
 
     fun associaChefe(view: View) {
         val toString = view.toString()
-        val chefeId = (chefe?.selectedItem as SpinnerDTO).id
-        val subordinadoId = (subordinado?.selectedItem as SpinnerDTO).id
+        val chefeId = (chefe?.selectedItem as ColaboradorDTO).id
+        val subordinadoId = (subordinado?.selectedItem as ColaboradorDTO).id
 
-        associaChefe(chefeId, subordinadoId)
+        colaboradorAPIIntegration.associaChefe(chefeId, subordinadoId, this@MainActivity)
     }
 
-    private fun getMyData(nomeValue: Editable?, senhaValue: Editable?) {
 
-        val retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.2.2:8080")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        //3. Create an instance of the interface:
-        val apiService = retrofit.create(ApiService::class.java)
-
-        //4. Create the request body:
-        val body = mapOf(
-            "nome" to nomeValue.toString(),
-            "senha" to senhaValue.toString()
-        )
-
-        //5. Make the request:
-
-        apiService.postRequest(body).enqueue(object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                nome?.text?.clear()
-                senha?.text?.clear()
-                recuperarColaboradores();
-            }
-
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                System.out.println("öi")
-            }
-        })
-
-    }
-
-    private fun associaChefe(chefeId: Int, subordinadoId: Int) {
-
-        val retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.2.2:8080")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        //3. Create an instance of the interface:
-        val apiService = retrofit.create(ApiService::class.java)
-
-        //4. Create the request body:
-        val body = mapOf(
-            "idChefe" to chefeId,
-            "idSubordinado" to subordinadoId
-        )
-
-        //5. Make the request:
-
-        apiService.associaChefe(body).enqueue(object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                nome?.text?.clear()
-                senha?.text?.clear()
-                recuperarColaboradores();
-            }
-
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                System.out.println("öi")
-            }
-        })
-
+    fun limparCampos() {
+        nome?.text?.clear()
+        senha?.text?.clear()
+        colaboradorAPIIntegration.recuperarColaboradores(this@MainActivity)
     }
 
 }
