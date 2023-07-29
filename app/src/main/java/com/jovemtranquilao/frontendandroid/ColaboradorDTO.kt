@@ -12,7 +12,7 @@ data class ColaboradorDTO(
     // @JsonProperty(" ") for the Jackson converter
 
     @SerializedName("id")
-    var id: Integer?,
+    var id: Int,
 
     @SerializedName("nome")
     var nome: String?,
