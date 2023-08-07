@@ -27,19 +27,16 @@ import retrofit2.converter.scalars.ScalarsConverterFactory
 class ColaborarAPIIntegration {
 
 
-    private fun buildApiService(): ApiService {
-        return Retrofit.Builder()
-            .baseUrl("http://192.168.2.2:8080")
-            .addConverterFactory(ScalarsConverterFactory.create())
-            .addConverterFactory(GsonConverterFactory.create())
-            .build().create(ApiService::class.java)
-    }
-
 
     fun recuperarColaboradores(
         mainActivity: MainActivity
     ) {
-        buildApiService().get().enqueue(
+        Retrofit.Builder()
+            .baseUrl("http://192.168.2.4:8082")
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(ApiService::class.java)
+        .get().enqueue(
             object : Callback<String> {
                 override fun onResponse(call: Call<String>, response: Response<String>) {
                     try {
@@ -102,7 +99,12 @@ class ColaborarAPIIntegration {
             "senha" to senhaValue.toString()
         )
 
-        buildApiService().postRequest(body).enqueue(object : Callback<ResponseBody> {
+        Retrofit.Builder()
+            .baseUrl("http://192.168.2.4:8084")
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(ApiService::class.java)
+            .postRequest(body).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 mainActivity.limparCampos()
             }
@@ -120,7 +122,11 @@ class ColaborarAPIIntegration {
             "idSubordinado" to subordinadoId
         )
 
-        buildApiService().associaChefe(body).enqueue(object : Callback<ResponseBody> {
+        Retrofit.Builder()
+            .baseUrl("http://192.168.2.4:8081")
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(ApiService::class.java).associaChefe(body).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 mainActivity.limparCampos()
             }
