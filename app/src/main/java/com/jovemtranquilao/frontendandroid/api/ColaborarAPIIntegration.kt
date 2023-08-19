@@ -32,7 +32,7 @@ class ColaborarAPIIntegration {
         mainActivity: MainActivity
     ) {
         Retrofit.Builder()
-            .baseUrl("http://192.168.2.4:8082")
+            .baseUrl("http://3.140.90.70:8082")
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build().create(ApiService::class.java)
@@ -100,7 +100,7 @@ class ColaborarAPIIntegration {
         )
 
         Retrofit.Builder()
-            .baseUrl("http://192.168.2.4:8084")
+            .baseUrl("http://3.143.118.52:8084")
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build().create(ApiService::class.java)
@@ -123,7 +123,7 @@ class ColaborarAPIIntegration {
         )
 
         Retrofit.Builder()
-            .baseUrl("http://192.168.2.4:8081")
+            .baseUrl("http://3.134.44.106:8081")
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build().create(ApiService::class.java).associaChefe(body).enqueue(object : Callback<ResponseBody> {
